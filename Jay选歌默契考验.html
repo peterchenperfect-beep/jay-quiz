@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>周杰伦专辑默契考验</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans SC",sans-serif;background:#f5f5f5;color:#333;line-height:1.6;min-height:100vh}
+.wrap{max-width:660px;margin:0 auto;padding:24px 16px}
+.header{text-align:center;margin-bottom:24px}
+.title{font-size:22px;font-weight:600;color:#1a1a2e;margin-bottom:4px}
+.sub{font-size:14px;color:#888}
+.bar-bg{height:4px;background:#e0e0e0;border-radius:2px;margin-bottom:20px}
+.bar-fill{height:4px;background:#534AB7;border-radius:2px;transition:width .4s}
+.step-row{display:flex;justify-content:space-between;font-size:12px;color:#aaa;margin-bottom:10px}
+.q-title{font-size:18px;font-weight:500;color:#1a1a2e;margin-bottom:16px}
+.q-date{font-size:12px;color:#888;font-weight:400;margin-left:6px}
+.songs{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:20px}
+.song{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:13px;color:#333;text-align:center;cursor:pointer;transition:all .15s}
+.song:hover{border-color:#534AB7;background:#f0edff;color:#534AB7}
+.song.on{border:2px solid #534AB7;background:#f0edff;color:#534AB7;font-weight:500}
+.nav{display:flex;align-items:center;gap:12px}
+.btn{background:#fff;border:1px solid #ccc;border-radius:8px;padding:10px 28px;font-size:14px;color:#333;cursor:pointer}
+.btn:hover{border-color:#534AB7;color:#534AB7}
+.btn:disabled{opacity:.4;cursor:default}
+.btn:disabled:hover{border-color:#ccc;color:#333}
+.hint{font-size:12px;color:#bbb}
+.result{display:none}
+.result.show{display:block}
+.r-head{font-size:16px;font-weight:500;text-align:center;margin-bottom:20px;color:#1a1a2e}
+.r-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:20px}
+.r-card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:12px 16px}
+.r-album{font-size:11px;color:#999;margin-bottom:3px}
+.r-song{font-size:14px;font-weight:500;color:#534AB7}
+.share-box{background:#f0edff;border:1px solid #AFA9EC;border-radius:8px;padding:16px;font-size:12px;color:#3C3489;line-height:1.9;white-space:pre-wrap;word-break:break-all;cursor:pointer;margin-bottom:6px}
+.copy-row{text-align:center;margin-bottom:16px}
+.copy-ok{color:#3B6D11;font-size:12px;display:none}
+.restart{display:block;margin:0 auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="title">周杰伦专辑默契考验</div>
+    <div class="sub">16张专辑 · 每张选一首最爱 · 完成后复制发给朋友</div>
+  </div>
+  <div id="quiz">
+    <div class="bar-bg"><div class="bar-fill" id="bar" style="width:0%"></div></div>
+    <div class="step-row"><span id="step">1 / 16</span><span class="hint" id="hint">请选择一首歌</span></div>
+    <div class="q-title" id="qTitle"></div>
+    <div class="songs" id="grid"></div>
+    <div class="nav">
+      <button class="btn" id="btnN" onclick="next()" disabled>下一张 →</button>
+    </div>
+  </div>
+  <div class="result" id="res">
+    <div class="r-head">答卷完成！复制下方文字发给朋友，看看默契值</div>
+    <div class="r-grid" id="rGrid"></div>
+    <div class="share-box" id="shareBox" onclick="doCopy()"></div>
+    <div class="copy-row"><span class="copy-ok" id="copyOk">已复制到剪贴板</span></div>
+    <button class="btn restart" onclick="init()">重新作答</button>
+  </div>
+</div>
+<script>
+const A=[
+  {n:"Jay",d:"2000-11-07",c:10,s:["可爱女人","完美主义","星晴","娘子","斗牛","黑色幽默","伊斯坦堡","印第安老斑鸠","龙卷风","反方向的钟"]},
+  {n:"范特西",d:"2001-09-01",c:10,s:["爱在西元前","爸我回来了","简单爱","忍者","开不了口","上海一九四三","对不起","威廉古堡","双截棍","安静"]},
+  {n:"八度空间",d:"2002-07-19",c:10,s:["半兽人","半岛铁盒","暗号","龙拳","火车叨位去","分裂","爷爷泡的茶","回到过去","米兰的小铁匠","最后的战役"]},
+  {n:"叶惠美",d:"2003-07-31",c:11,s:["以父之名","懦夫","晴天","三年二班","东风破","你听得到","同一种调调","她的睫毛","爱情悬崖","梯田","双刀"]},
+  {n:"七里香",d:"2004-08-03",c:10,s:["我的地盘","七里香","借口","外婆","将军","搁浅","乱舞春秋","困兽之斗","园游会","止战之殇"]},
+  {n:"十一月的萧邦",d:"2005-11-01",c:12,s:["夜曲","蓝色风暴","发如雪","黑色毛衣","四面楚歌","枫","浪漫手机","逆鳞","麦芽糖","珊瑚海","飘移","一路向北"]},
+  {n:"依然范特西",d:"2006-09-05",c:9,s:["夜的第七章","听妈妈的话","千里之外","退后","红模仿","心雨","白色风车","迷迭香","菊花台"]},
+  {n:"我很忙",d:"2007-11-02",c:10,s:["牛仔很忙","彩虹","青花瓷","阳光宅男","蒲公英的约定","无双","我不配","扯","甜甜的","最长的电影"]},
+  {n:"魔杰座",d:"2008-10-14",c:11,s:["龙战骑士","给我一首歌的时间","蛇舞","花海","魔术先生","说好的幸福呢","兰亭序","流浪诗人","时光机","乔克叔叔","稻香"]},
+  {n:"跨时代",d:"2010-05-18",c:11,s:["跨时代","说了再见","烟花易冷","免费教学录影带","好久不见","雨下一整晚","嘻哈空姐","我落泪情绪零碎","爱的飞行日记","自导自演","超人不会飞"]},
+  {n:"惊叹号",d:"2011-11-11",c:11,s:["惊叹号","水手怕水","世界未末日","皮影戏","超跑女神","Mine Mine","公主病","疗伤烧肉粽","琴伤","我要夏天","赛车"]},
+  {n:"十二新作",d:"2012-12-28",c:12,s:["四季列车","手语","公公偏头痛","明明就","傻笑","比较大的大提琴","爱你没差","红尘客栈","梦想启动","大笨钟","哪里都是你","乌克丽丽"]},
+  {n:"哎哟，不错哦",d:"2014-12-26",c:11,s:["阳明山","窃爱","算什么男人","天涯过客","怎么了","一口气全念对","我要夏天","手写的从前","鞋子特大号","听爸爸的话","听见下雨的声音"]},
+  {n:"周杰伦的床边故事",d:"2016-06-24",c:10,s:["床边故事","说走就走","一点点","前世情人","英雄","不该","土耳其冰淇淋","告白气球","Now You See Me","爱情废柴"]},
+  {n:"最伟大的作品",d:"2022-07-15",c:12,s:["Intro","最伟大的作品","还在流浪","说好不哭","红颜如霜","不爱我就拉倒","Mojito","错过的烟火","等你下课","粉色海洋","倒影","我是如此相信"]},
+  {n:"太阳之子",d:"2026-03-25",c:13,s:["太阳之子","西西里","那天下雨了","湘女多情","谁稀罕","七月的极光","爱琴海","I Do","圣徒","女儿殿下","淘金小镇","乡间的路","圣诞星"]}
+];
+let cur=0,ans=[];
+
+function init(){
+  cur=0;ans=[];
+  document.getElementById('res').classList.remove('show');
+  document.getElementById('quiz').style.display='block';
+  render();
+}
+
+function render(){
+  const a=A[cur],t=A.length;
+  document.getElementById('bar').style.width=((cur/t)*100)+'%';
+  document.getElementById('step').textContent=(cur+1)+' / '+t;
+  document.getElementById('hint').textContent='请选择一首歌';
+  document.getElementById('qTitle').innerHTML='如果只能选一首《'+a.n+'》里的歌，你会选哪首？<span class="q-date">'+a.d+' · '+a.c+'首</span>';
+  const nb=document.getElementById('btnN');
+  nb.disabled=true;
+  nb.textContent=cur<A.length-1?'下一张 →':'查看结果 →';
+  const g=document.getElementById('grid');
+  g.innerHTML='';
+  a.s.forEach(s=>{
+    const b=document.createElement('button');
+    b.className='song';b.textContent=s;
+    b.onclick=function(){pick(s,b)};
+    g.appendChild(b);
+  });
+}
+
+function pick(name,btn){
+  document.querySelectorAll('.song').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  ans[cur]=name;
+  document.getElementById('btnN').disabled=false;
+  document.getElementById('hint').textContent='已选：'+name;
+}
+
+function next(){
+  cur++;
+  if(cur>=A.length)showRes();
+  else render();
+}
+
+function showRes(){
+  document.getElementById('quiz').style.display='none';
+  document.getElementById('res').classList.add('show');
+  const g=document.getElementById('rGrid');g.innerHTML='';
+  const lines=['🎵 我的周杰伦专辑选歌答卷'];
+  A.forEach((a,i)=>{
+    const d=document.createElement('div');d.className='r-card';
+    d.innerHTML='<div class="r-album">《'+a.n+'》'+a.d+'</div><div class="r-song">'+ans[i]+'</div>';
+    g.appendChild(d);
+    lines.push('《'+a.n+'》→ '+ans[i]);
+  });
+  lines.push('','你选一样吗？来试试吧');
+  document.getElementById('shareBox').textContent=lines.join('\n');
+  document.getElementById('copyOk').style.display='none';
+}
+
+function doCopy(){
+  const t=document.getElementById('shareBox').textContent;
+  const ok=document.getElementById('copyOk');
+  navigator.clipboard.writeText(t).then(()=>{ok.style.display='inline';setTimeout(()=>ok.style.display='none',2000)}).catch(()=>{
+    const r=document.createRange();r.selectNodeContents(document.getElementById('shareBox'));
+    const s=window.getSelection();s.removeAllRanges();s.addRange(r);
+  });
+}
+
+init();
+</script>
+</body>
+</html>
